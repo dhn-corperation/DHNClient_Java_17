@@ -60,7 +60,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table") );
-		param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setMsg_type("M");
 		
 
