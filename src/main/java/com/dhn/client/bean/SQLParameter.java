@@ -16,6 +16,7 @@ public class SQLParameter {
 	private String database;
 	private String kakao_use;
 	private String msg_use;
+	private String test_use;
 	private String group_no;
 	private String msg_type;
 	private String sms_kind;
