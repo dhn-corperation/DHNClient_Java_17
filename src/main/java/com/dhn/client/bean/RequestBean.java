@@ -18,4 +18,5 @@ public class RequestBean {
 	private String smssender;
 	private String crypto;
 	private String reservedt;
+	private String mmsimageid;
 }

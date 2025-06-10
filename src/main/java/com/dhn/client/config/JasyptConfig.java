@@ -1,4 +1,4 @@
-package com.dhn.client;
+package com.dhn.client.config;
 
 import org.jasypt.encryption.StringEncryptor;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class JasyptConfig {
+	
 	/*
 	@Bean(name = "jasyptStringEncryptor")
 	public StringEncryptor stringEncryptor() {

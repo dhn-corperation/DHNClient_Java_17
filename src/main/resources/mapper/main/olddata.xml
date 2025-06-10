@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.olddata.mapper.SendRequest">
+
+    <select id="old_data_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS != '0'
+                    AND RESERVE_DT &lt;= SYSDATE - INTERVAL '${time}' DAY
+            </when>
+            <when test="database == 'mysql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS != '0'
+                    AND RESERVE_DT &lt;= DATE_SUB(NOW(), INTERVAL '${time}' DAY)
+            </when>
+        </choose>
+    </select>
+
+    <update id="old_data_group_update" parameterType = "com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                    SET SEND_GROUP = #{group_no}
+                WHERE STATUS != '0'
+                    AND RESERVE_DT &lt;= SYSDATE - INTERVAL '${time}' DAY
+                    AND ROWNUM &lt;= 500
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                    SET SEND_GROUP = #{group_no}
+                WHERE STATUS != '0'
+                    AND RESERVE_DT &lt;= DATE_SUB(NOW(), INTERVAL '${time}' DAY)
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <update id="old_data_update" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                    SET STATUS = '8',
+                    RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
+                    RESULT = '3999',
+                    RESULT_MSG = '7999',
+                    RESULT_MESSAGE = '과거데이터 실패처리',
+                    TELCOINFO = 'ETC'
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                    SET STATUS = '8',
+                    RESULT_DT = NOW(),
+                    RESULT = '3999',
+                    RESULT_MSG = '7999',
+                    RESULT_MESSAGE = '과거데이터 실패처리',
+                    TELCOINFO = 'ETC'
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <insert id="old_data_insert" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="old_data_delete" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                DELETE FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </delete>
+
+</mapper>

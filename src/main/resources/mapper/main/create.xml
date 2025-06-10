@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.create.mapper.SendRequest">
+
+    <select id="tableCheck" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        <choose>
+            <!-- oracle용 테이블 존재 여부 확인 -->
+            <when test="database == 'oracle'">
+                SELECT COUNT(1)
+                FROM USER_TABLES
+                WHERE TABLE_NAME = UPPER(#{msg_table})
+            </when>
+
+            <!-- mysql / mariadb 용 테이블 존재 여부 확인 -->
+            <when test="database == 'mysql'">
+                SELECT COUNT(1)
+                FROM information_schema.tables
+                WHERE table_schema = DATABASE()
+                AND table_name = #{msg_table}
+            </when>
+        </choose>
+    </select>
+
+    <select id="seqCheck_oracle" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        SELECT COUNT(1)
+        FROM USER_SEQUENCES
+        WHERE SEQUENCE_NAME = UPPER(#{sequence})
+    </select>
+
+    <update id="createSequence_oracle" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE SEQUENCE ${sequence}
+            START WITH 1
+            INCREMENT BY 1
+            NOCACHE
+        NOCYCLE
+    </update>
+
+    <update id="createTable_oracle" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE TABLE "${msg_table}" (
+           "ID" NUMBER,
+           "MSG_ID" VARCHAR2(20 CHAR) NOT NULL,
+           "MESSAGE_TYPE" VARCHAR2(4 CHAR) NOT NULL,
+           "MESSAGE" VARCHAR2(4000 CHAR) NOT NULL,
+           "STATUS" VARCHAR2(1 CHAR) DEFAULT '0',
+           "P_INVOICE" VARCHAR2(100 CHAR) DEFAULT NULL,
+           "PHN" VARCHAR2(15 CHAR) NOT NULL,
+           "SMS_SENDER" VARCHAR2(15 CHAR) DEFAULT NULL,
+           "REG_DT" TIMESTAMP DEFAULT SYSDATE,
+           "RESERVE_DT" TIMESTAMP DEFAULT SYSDATE,
+           "RESPONSE_DT" TIMESTAMP DEFAULT NULL,
+           "RESULT_DT" VARCHAR2(40 CHAR) DEFAULT NULL,
+           "BUTTON1" VARCHAR2(300 CHAR) DEFAULT NULL,
+           "BUTTON2" VARCHAR2(300 CHAR) DEFAULT NULL,
+           "BUTTON3" VARCHAR2(300 CHAR) DEFAULT NULL,
+           "BUTTON4" VARCHAR2(300 CHAR) DEFAULT NULL,
+           "BUTTON5" VARCHAR2(300 CHAR) DEFAULT NULL,
+           "TMPL_ID" VARCHAR2(100 CHAR) DEFAULT NULL,
+           "PROFILE" VARCHAR2(40 CHAR) DEFAULT NULL,
+           "TITLE" VARCHAR2(50 CHAR) DEFAULT NULL,
+           "HEADER" VARCHAR2(50 CHAR) DEFAULT NULL,
+           "AD_FLAG" VARCHAR2(1 CHAR) DEFAULT 'N',
+           "FI_IMAGE_PATH" VARCHAR2(200 CHAR) DEFAULT NULL,
+           "IMAGE_LINK" VARCHAR2(200 CHAR) DEFAULT NULL,
+           "IMAGE_URL" VARCHAR2(200 CHAR) DEFAULT NULL,
+           "WIDE" VARCHAR2(1 CHAR) DEFAULT 'N',
+           "LINK" VARCHAR2(300 CHAR) DEFAULT NULL,
+           "ATTACHMENTS" VARCHAR2(1000 CHAR) DEFAULT NULL,
+           "MSG" VARCHAR2(4000 CHAR) DEFAULT NULL,
+           "SMS_KIND" VARCHAR2(1 CHAR) DEFAULT NULL,
+           "SMSLMS_TIT" VARCHAR2(100 CHAR) DEFAULT NULL,
+           "MMS_IMAGE_KEY" VARCHAR2(100 CHAR) DEFAULT NULL,
+           "MMS_IMAGE1" VARCHAR2(200 CHAR) DEFAULT NULL,
+           "MMS_IMAGE2" VARCHAR2(200 CHAR) DEFAULT NULL,
+           "MMS_IMAGE3" VARCHAR2(200 CHAR) DEFAULT NULL,
+           "SEND_GROUP" VARCHAR2(50 CHAR) DEFAULT NULL,
+           "RESULT" VARCHAR2(5 CHAR) DEFAULT NULL,
+           "RESULT_MSG" VARCHAR2(5 CHAR) DEFAULT NULL,
+           "RESULT_MESSAGE" VARCHAR2(2000 CHAR) DEFAULT NULL,
+           "TELCOINFO" VARCHAR2(5 CHAR) DEFAULT NULL,
+           "REAL_MESSAGE_TYPE" VARCHAR2(4 CHAR) DEFAULT NULL,
+           "REAL_SEND_FLAG" VARCHAR2(4 CHAR) DEFAULT NULL,
+           "ETC1" VARCHAR2(100 CHAR) DEFAULT NULL,
+           "ETC2" VARCHAR2(100 CHAR) DEFAULT NULL,
+           "ETC3" VARCHAR2(100 CHAR) DEFAULT NULL,
+           "ETC4" VARCHAR2(100 CHAR) DEFAULT NULL,
+           "ETC5" VARCHAR2(100 CHAR) DEFAULT NULL
+        )
+    </update>
+
+    <!-- 인덱스 생성 SQL -->
+    <update id="createPrimaryKey" parameterType="com.dhn.client.bean.SQLParameter">
+        ALTER TABLE "${msg_table}" ADD CONSTRAINT "${msg_table}_MSGID_PK" PRIMARY KEY("ID")
+    </update>
+
+    <update id="createIndex1_oracle" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_IDX1" ON "${msg_table}" ("STATUS", "RESERVE_DT", "MESSAGE_TYPE", "SMS_KIND" ,"SEND_GROUP")
+    </update>
+
+    <update id="createIndex2_oracle" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_IDX2" ON "${msg_table}" ("STATUS", "RESERVE_DT","MESSAGE_TYPE","SMS_KIND", "SEND_GROUP", "IMAGE_URL", "FI_IMAGE_PATH", "MMS_IMAGE_KEY")
+    </update>
+
+    <update id="createIndex3_oracle" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_IDX3" ON "${msg_table}" ("SEND_GROUP")
+    </update>
+
+    <update id="createIndex4_oracle" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_IDX4" ON "${msg_table}" ("MSG_ID")
+    </update>
+
+    <update id="createTable_mysql" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE TABLE `${msg_table}` (
+           `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+           `MSG_ID` varchar(20) NOT NULL,
+           `MESSAGE_TYPE` varchar(4) NOT NULL,
+           `MESSAGE` varchar(4000) DEFAULT NULL,
+           `STATUS` varchar(1) DEFAULT '0',
+           `P_INVOICE` varchar(100) DEFAULT NULL,
+           `PHN` varchar(15) NOT NULL,
+           `SMS_SENDER` varchar(15) DEFAULT NULL,
+           `REG_DT` datetime NOT NULL DEFAULT NOW(),
+           `RESERVE_DT` datetime NOT NULL DEFAULT NOW(),
+           `RESPONSE_DT` datetime DEFAULT NULL,
+           `RESULT_DT` varchar(40) DEFAULT NULL,
+           `BUTTON1` varchar(300) DEFAULT NULL,
+           `BUTTON2` varchar(300) DEFAULT NULL,
+           `BUTTON3` varchar(300) DEFAULT NULL,
+           `BUTTON4` varchar(300) DEFAULT NULL,
+           `BUTTON5` varchar(300) DEFAULT NULL,
+           `TMPL_ID` varchar(100) DEFAULT NULL,
+           `PROFILE` varchar(40) DEFAULT NULL,
+           `TITLE` varchar(50) DEFAULT NULL,
+           `HEADER` varchar(50) DEFAULT NULL,
+           `AD_FLAG` varchar(1) DEFAULT 'N',
+           `FI_IMAGE_PATH` varchar(200) DEFAULT NULL,
+           `IMAGE_LINK` varchar(200) DEFAULT NULL,
+           `IMAGE_URL` varchar(200) DEFAULT NULL,
+           `WIDE` varchar(1) DEFAULT 'N',
+           `LINK` varchar(300) DEFAULT NULL,
+           `ATTACHMENTS` varchar(1000) DEFAULT NULL,
+           `MSG` varchar(4000) DEFAULT NULL,
+           `SMS_KIND` varchar(1) DEFAULT NULL,
+           `SMSLMS_TIT` varchar(100) DEFAULT NULL,
+           `MMS_IMAGE_KEY` VARCHAR(100) DEFAULT NULL,
+           `MMS_IMAGE1` VARCHAR(200) DEFAULT NULL,
+           `MMS_IMAGE2` VARCHAR(200) DEFAULT NULL,
+           `MMS_IMAGE3` VARCHAR(200) DEFAULT NULL,
+           `SEND_GROUP` varchar(50) DEFAULT NULL,
+           `RESULT` varchar(5) DEFAULT NULL,
+           `RESULT_MSG` varchar(5) DEFAULT NULL,
+           `RESULT_MESSAGE` varchar(2000) DEFAULT NULL,
+           `TELCOINFO` varchar(5) DEFAULT NULL,
+           `REAL_MESSAGE_TYPE` varchar(4) DEFAULT NULL,
+           `REAL_SEND_FLAG` varchar(4) DEFAULT NULL,
+           `ETC1` varchar(100) DEFAULT NULL,
+           `ETC2` varchar(100) DEFAULT NULL,
+           `ETC3` varchar(100) DEFAULT NULL,
+           `ETC4` varchar(100) DEFAULT NULL,
+           `ETC5` varchar(100) DEFAULT NULL,
+           PRIMARY KEY (`id`),
+           KEY `${msg_table}_IDX1` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`) USING BTREE,
+           KEY `${msg_table}_IDX2` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`,`IMAGE_URL`,`FI_IMAGE_PATH`,`MMS_IMAGE_KEY`) USING BTREE,
+           KEY `${msg_table}_IDX3` (`SEND_GROUP`) USING BTREE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    </update>
+
+    <select id="logTableCheck" parameterType="map" resultType="int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT COUNT(1)
+                FROM ALL_TABLES
+                WHERE TABLE_NAME = UPPER(#{logTable})
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT COUNT(1)
+                FROM information_schema.tables
+                WHERE table_schema = DATABASE()
+                AND table_name = #{logTable}
+            </when>
+        </choose>
+    </select>
+
+    <update id="createLogTable" parameterType="map">
+        <choose>
+            <when test="database == 'oracle'">
+                CREATE TABLE "${logTable}" AS
+                SELECT * FROM "${msgTable}" WHERE 1=0
+            </when>
+
+            <when test="database == 'mysql'">
+                CREATE TABLE `${logTable}` AS
+                SELECT * FROM `${msgTable}` WHERE 1=0
+            </when>
+        </choose>
+    </update>
+
+</mapper>

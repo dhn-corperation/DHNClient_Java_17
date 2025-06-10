@@ -43,5 +43,11 @@ public class KAORequestBean {
 	private String att_items;
 	private String att_coupon;
 	private String crypto;
+	private String btn_name;
+	private String btn_url;
+	private String button;
+	private String realsendflag;
+	private String attachments;
+	private String link;
 	  
 }

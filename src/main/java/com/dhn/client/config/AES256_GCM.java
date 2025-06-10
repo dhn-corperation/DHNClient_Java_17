@@ -1,10 +1,10 @@
-package com.dhn.client;
+package com.dhn.client.config;
+
+import org.springframework.context.annotation.Configuration;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AES256_GCM {

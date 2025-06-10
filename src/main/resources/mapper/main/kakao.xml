@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.kakao.mapper.SendRequest">
+
+    <select id="req_kao_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= SYSDATE
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+            </when>
+            <when test="database == 'mysql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                    SEND_GROUP = #{group_no}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= SYSDATE
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND ROWNUM &lt;= 500
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                    SEND_GROUP = #{group_no}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.KAORequestBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
+                        ELSE '82' || SUBSTR(PHN, 2, 15)
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    BUTTON1 AS button1,
+                    BUTTON2 AS button2,
+                    BUTTON3 AS button3,
+                    BUTTON4 AS button4,
+                    BUTTON5 AS button5,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    ATTACHMENTS as attachments,
+                    REAL_SEND_FLAG as realsendflag
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
+                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    BUTTON1 AS button1,
+                    BUTTON2 AS button2,
+                    BUTTON3 AS button3,
+                    BUTTON4 AS button4,
+                    BUTTON5 AS button5,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    ATTACHMENTS as attachments,
+                    REAL_SEND_FLAG as realsendflag
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                    RESPONSE_DT = SYSDATE
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                    RESPONSE_DT = NOW()
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <update id="kaoResultUpdate" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '${status}',
+                    RESULT_DT = '${result_dt}',
+                    RESULT = '${s_code}',
+                    RESULT_MSG = '${code}',
+                    RESULT_MESSAGE = '${result_message}',
+                    TELCOINFO = '${telecom}',
+                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '${status}',
+                    RESULT_DT = '${result_dt}',
+                    RESULT = '${s_code}',
+                    RESULT_MSG = '${code}',
+                    RESULT_MESSAGE = '${result_message}',
+                    TELCOINFO = '${telecom}',
+                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </update>
+
+    <insert id="kaoLogInsert" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="kaoResultDelete" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </delete>
+
+    <select id="kao_log_move_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT COUNT(1) as cnt
+                FROM ${msg_table}
+                WHERE STATUS = '9'
+            </when>
+            <when test="database == 'mysql'">
+                SELECT COUNT(1) as cnt
+                FROM ${msg_table}
+                WHERE STATUS = '9'
+            </when>
+        </choose>
+    </select>
+
+    <update id="update_log_move_groupNo" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = #{group_no}
+                WHERE STATUS = '9'
+                    AND ROWNUM &lt; 500
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = #{group_no}
+                WHERE STATUS = '9'
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <insert id="log_move_insert" parameterType="com.dhn.client.bean.SQLParameter">
+
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="log_move_delete" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                DELETE FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </delete>
+
+    <!-- 친구톡 -->
+    <select id="req_ft_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                AND RESERVE_DT &lt;= SYSDATE
+                AND MESSAGE_TYPE = #{msg_type}
+                AND (FI_IMAGE_PATH IS NULL OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
+                AND SEND_GROUP IS NULL
+            </when>
+            <when test="database == 'mysql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                AND RESERVE_DT &lt;= NOW()
+                AND MESSAGE_TYPE = #{msg_type}
+                AND (FI_IMAGE_PATH IS NULL OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
+                AND SEND_GROUP IS NULL
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_ft_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = #{group_no}
+                WHERE STATUS = '0'
+                AND RESERVE_DT &lt;= SYSDATE
+                AND MESSAGE_TYPE = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND (FI_IMAGE_PATH IS NULL OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
+                AND ROWNUM &lt;= 500
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                    SET STATUS = '1',
+                    SEND_GROUP = #{group_no}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND (FI_IMAGE_PATH IS NULL OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <select id="req_ft_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.KAORequestBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
+                        ELSE '82' || SUBSTR(PHN, 2, 15)
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    AD_FLAG as adflag,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    BUTTON1 AS button1,
+                    BUTTON2 AS button2,
+                    BUTTON3 AS button3,
+                    BUTTON4 AS button4,
+                    BUTTON5 AS button5,
+                    IMAGE_LINK as imagelink,
+                    IMAGE_URL as imageurl,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
+                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    AD_FLAG as adflag,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    BUTTON1 AS button1,
+                    BUTTON2 AS button2,
+                    BUTTON3 AS button3,
+                    BUTTON4 AS button4,
+                    BUTTON5 AS button5,
+                    IMAGE_LINK as imagelink,
+                    IMAGE_URL as imageurl,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </select>
+
+    <select id="ft_image_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= SYSDATE
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL
+                    AND IMAGE_URL IS NULL
+            </when>
+            <when test="database == 'mysql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL
+                    AND IMAGE_URL IS NULL
+            </when>
+        </choose>
+    </select>
+
+    <select id="ft_image_list" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.ImageBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT FI_IMAGE_PATH as ftimagepath,
+                    MSG_ID as msgid
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= SYSDATE
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL
+                    AND IMAGE_URL IS NULL
+                    AND ROWNUM &lt; 500
+            </when>
+            <when test="database == 'mysql'">
+                SELECT FI_IMAGE_PATH as ftimagepath,
+                    MSG_ID as msgid
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL
+                    AND IMAGE_URL IS NULL
+                LIMIT 500
+            </when>
+        </choose>
+    </select>
+
+    <update id="ft_image_url_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                    SET IMAGE_URL = #{ft_image_url}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                    SET IMAGE_URL = #{ft_image_url}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </update>
+
+    <update id="ft_image_fail_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET RESULT = '${ft_image_code}',
+                    RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
+                    STATUS = 'F',
+                    RESULT_MESSAGE = '${img_err_msg}'
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RESULT = '${ft_image_code}',
+                    RESULT_DT = NOW(),
+                    STATUS = 'F',
+                    RESULT_MESSAGE = '${img_err_msg}'
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </update>
+
+    <insert id="ft_image_fail_log_Insert" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="ft_image_fail_delete" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </delete>
+
+</mapper>

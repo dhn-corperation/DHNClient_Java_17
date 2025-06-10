@@ -1,17 +1,13 @@
 package com.dhn.client.service;
 
-import java.security.SecureRandom;
-
-import javax.crypto.spec.GCMParameterSpec;
-
+import com.dhn.client.bean.RequestBean;
+import com.dhn.client.config.AES256_GCM;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dhn.client.AES256_GCM;
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.RequestBean;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.crypto.spec.GCMParameterSpec;
+import java.security.SecureRandom;
 
 @Service
 @Slf4j
