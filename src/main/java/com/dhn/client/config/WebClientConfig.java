@@ -18,6 +18,9 @@ public class WebClientConfig {
         return WebClient.builder()
                 .baseUrl(dhnServer)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(5 * 1024 * 1024))
                 .build();
     }
 }

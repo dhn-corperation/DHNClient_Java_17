@@ -101,7 +101,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
 			int activeThreads = poolExecutor.getActiveCount();
 
-			if(activeThreads < 3){
+			if(activeThreads < 2){
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 				LocalDateTime now = LocalDateTime.now();
 				String group_no = "M" + now.format(formatter);

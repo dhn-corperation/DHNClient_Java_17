@@ -81,7 +81,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
 			int activeThreads = poolExecutor.getActiveCount();
 
-			if(activeThreads < 5){
+			if(activeThreads < 2){
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 				LocalDateTime now = LocalDateTime.now();
 				String group_no = "L" + now.format(formatter);
