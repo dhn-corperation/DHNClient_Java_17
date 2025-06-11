@@ -7,6 +7,7 @@
 - 17
 
 ## Function
+- WebClient API 발송
 - AT, AI, FT, PH 발송
 - PH
     * SMS
