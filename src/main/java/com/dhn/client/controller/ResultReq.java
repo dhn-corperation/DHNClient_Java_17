@@ -1,11 +1,9 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.KAORequestService;
 import com.dhn.client.service.MSGRequestService;
 import com.dhn.client.service.ResultService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,10 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
