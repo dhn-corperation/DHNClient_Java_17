@@ -31,11 +31,6 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     }
 
     @Override
-    public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
-        return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_kao_select", param);
-    }
-
-    @Override
     public void updateKAOSendComplete(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
     }
@@ -81,11 +76,6 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     }
 
     @Override
-    public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception {
-        return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_ft_select", param);
-    }
-
-    @Override
     public int selectFtImageCount(SQLParameter param) throws Exception {
         return sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.ft_image_count",param);
     }
@@ -105,6 +95,11 @@ public class KAORequestDAOimpl implements KAORequestDAO{
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.ft_image_fail_update",param);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.ft_image_fail_log_Insert", param);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.ft_image_fail_delete", param);
+    }
+
+    @Override
+    public List<KAORequestBean> selectKAOSendData(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.kao_send_data_list", param);
     }
 
 }

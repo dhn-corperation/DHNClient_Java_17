@@ -1,6 +1,6 @@
 package com.dhn.client.service;
 
-import com.dhn.client.bean.KAORequestBean;
+import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,17 +13,17 @@ import java.util.Map;
 
 @Service
 @Slf4j
-public class KAOService {
+public class MSGService {
 
     @Autowired
     private WebClient webClient;
 
     @Autowired
-    private KAORequestService kaoRequestService;
+    private MSGRequestService msgRequestService;
 
-    public void KAOSendApiProcess(SQLParameter param){
+    public void MSGSendApiProcess(SQLParameter param){
         try{
-            List<KAORequestBean> _list = kaoRequestService.selectKAOSendData(param);
+            List<RequestBean> _list = msgRequestService.selectMSGSendData(param);
 
             webClient.post()
                     .uri("req")
@@ -33,27 +33,28 @@ public class KAOService {
                     .bodyToMono(new ParameterizedTypeReference<Map<String,String>>() {})
                     .doOnNext(res ->{
                         try {
-                            log.info("{} 응답: {}",param.getMsg_type(), res);
+                            log.info("{}({}) 응답: {}",param.getMsg_type(), param.getSms_kind(), res);
                             if ("OK".equalsIgnoreCase(res.get("status"))) {
-                                kaoRequestService.updateKAOSendComplete(param);
+                                msgRequestService.updateSMSSendComplete(param);
                             } else {
-                                kaoRequestService.updateKAOSendInit(param);
+                                msgRequestService.updateSMSSendInit(param);
                             }
                         } catch (Exception ex) {
-                            log.error("{} 메시지 발송 완료 처리 중 오류: {}",param.getMsg_type(), ex);
+                            log.error("{}({}) 메시지 발송 완료 처리 중 오류: {}",param.getMsg_type(), param.getSms_kind(), ex);
                         }
                     })
                     .doOnError(e->{
                         try{
-                            log.error("{} 메시지 발송 중 오류 발생 : {}",param.getMsg_type(), e);
-                            kaoRequestService.updateKAOSendInit(param);
+                            log.error("{}({}) 메시지 발송 중 오류 발생 : {}",param.getMsg_type(), param.getSms_kind(), e);
+                            msgRequestService.updateSMSSendInit(param);
                         }catch (Exception ex){
-                            log.error("{} 메시지 발송 재처리 중 오류 발생 : {}",param.getMsg_type(), ex);
+                            log.error("{}({}) 메시지 발송 재처리 중 오류 발생 : {}",param.getMsg_type(), param.getSms_kind(), ex);
                         }
                     })
                     .block();
         }catch (Exception e){
-            log.error("{} 메세지 전송 오류 : {}",param.getMsg_type() ,e.toString());
+            log.error("{}({}) 메세지 전송 오류 : {}",param.getMsg_type(), param.getSms_kind(), e.toString());
         }
+
     }
 }

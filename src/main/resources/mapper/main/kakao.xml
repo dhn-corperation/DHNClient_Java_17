@@ -49,75 +49,6 @@
         </choose>
     </update>
 
-    <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.KAORequestBean">
-        <choose>
-            <when test="database == 'oracle'">
-                SELECT
-                    MSG_ID AS msgid,
-                    MESSAGE_TYPE AS messagetype,
-                    MESSAGE AS msg,
-                    MSG AS msgsms,
-                    CASE
-                        WHEN PHN LIKE '82%' THEN PHN
-                        WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
-                        ELSE '82' || SUBSTR(PHN, 2, 15)
-                    END AS phn,
-                    P_INVOICE as pinvoice,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    SMS_KIND as smskind,
-                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    BUTTON1 AS button1,
-                    BUTTON2 AS button2,
-                    BUTTON3 AS button3,
-                    BUTTON4 AS button4,
-                    BUTTON5 AS button5,
-                    TMPL_ID AS tmplid,
-                    PROFILE AS profile,
-                    '00000000000000' AS reservedt,
-                    TITLE as title,
-                    HEADER as header,
-                    LINK AS link,
-                    ATTACHMENTS as attachments,
-                    REAL_SEND_FLAG as realsendflag
-                FROM ${msg_table}
-                WHERE SEND_GROUP = #{group_no}
-            </when>
-            <when test="database == 'mysql'">
-                SELECT
-                    MSG_ID AS msgid,
-                    MESSAGE_TYPE AS messagetype,
-                    MESSAGE AS msg,
-                    MSG AS msgsms,
-                    CASE
-                        WHEN PHN LIKE '82%' THEN PHN
-                        WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
-                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
-                    END AS phn,
-                    P_INVOICE as pinvoice,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    SMS_KIND as smskind,
-                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
-                    BUTTON1 AS button1,
-                    BUTTON2 AS button2,
-                    BUTTON3 AS button3,
-                    BUTTON4 AS button4,
-                    BUTTON5 AS button5,
-                    TMPL_ID AS tmplid,
-                    PROFILE AS profile,
-                    '00000000000000' AS reservedt,
-                    TITLE as title,
-                    HEADER as header,
-                    LINK AS link,
-                    ATTACHMENTS as attachments,
-                    REAL_SEND_FLAG as realsendflag
-                FROM ${msg_table}
-                WHERE SEND_GROUP = #{group_no}
-            </when>
-        </choose>
-    </select>
-
     <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
         <choose>
             <when test="database == 'oracle'">
@@ -321,69 +252,6 @@
         </choose>
     </update>
 
-    <select id="req_ft_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.KAORequestBean">
-        <choose>
-            <when test="database == 'oracle'">
-                SELECT
-                    MSG_ID AS msgid,
-                    MESSAGE_TYPE AS messagetype,
-                    MESSAGE AS msg,
-                    MSG AS msgsms,
-                    CASE
-                        WHEN PHN LIKE '82%' THEN PHN
-                        WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
-                        ELSE '82' || SUBSTR(PHN, 2, 15)
-                    END AS phn,
-                    P_INVOICE as pinvoice,
-                    AD_FLAG as adflag,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    SMS_KIND as smskind,
-                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    BUTTON1 AS button1,
-                    BUTTON2 AS button2,
-                    BUTTON3 AS button3,
-                    BUTTON4 AS button4,
-                    BUTTON5 AS button5,
-                    IMAGE_LINK as imagelink,
-                    IMAGE_URL as imageurl,
-                    PROFILE AS profile,
-                    '00000000000000' AS reservedt
-                FROM ${msg_table}
-                WHERE SEND_GROUP = #{group_no}
-            </when>
-            <when test="database == 'mysql'">
-                SELECT
-                    MSG_ID AS msgid,
-                    MESSAGE_TYPE AS messagetype,
-                    MESSAGE AS msg,
-                    MSG AS msgsms,
-                    CASE
-                        WHEN PHN LIKE '82%' THEN PHN
-                        WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
-                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
-                    END AS phn,
-                    P_INVOICE as pinvoice,
-                    AD_FLAG as adflag,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    SMS_KIND as smskind,
-                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
-                    BUTTON1 AS button1,
-                    BUTTON2 AS button2,
-                    BUTTON3 AS button3,
-                    BUTTON4 AS button4,
-                    BUTTON5 AS button5,
-                    IMAGE_LINK as imagelink,
-                    IMAGE_URL as imageurl,
-                    PROFILE AS profile,
-                    '00000000000000' AS reservedt
-                FROM ${msg_table}
-                WHERE SEND_GROUP = #{group_no}
-            </when>
-        </choose>
-    </select>
-
     <select id="ft_image_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         <choose>
             <when test="database == 'oracle'">
@@ -501,5 +369,80 @@
             </when>
         </choose>
     </delete>
+
+    <select id="kao_send_data_list" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.KAORequestBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
+                        ELSE '82' || SUBSTR(PHN, 2, 15)
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    BUTTON1 AS button1,
+                    BUTTON2 AS button2,
+                    BUTTON3 AS button3,
+                    BUTTON4 AS button4,
+                    BUTTON5 AS button5,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    ATTACHMENTS as attachments,
+                    REAL_SEND_FLAG as realsendflag,
+                    AD_FLAG as adflag,
+                    IMAGE_LINK as imagelink,
+                    IMAGE_URL as imageurl
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
+                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    BUTTON1 AS button1,
+                    BUTTON2 AS button2,
+                    BUTTON3 AS button3,
+                    BUTTON4 AS button4,
+                    BUTTON5 AS button5,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    ATTACHMENTS as attachments,
+                    REAL_SEND_FLAG as realsendflag,
+                    AD_FLAG as adflag,
+                    IMAGE_LINK as imagelink,
+                    IMAGE_URL as imageurl
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </select>
 
 </mapper>

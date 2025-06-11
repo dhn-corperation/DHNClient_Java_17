@@ -135,7 +135,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			String result_message = ent.getString("message").isEmpty()?"":ent.getString("message");
 
-			if(ent.getString("message_type").equalsIgnoreCase("AT") || ent.getString("message_type").equalsIgnoreCase("AI") || ent.getString("message_type").equalsIgnoreCase("FI") || ent.getString("message_type").equalsIgnoreCase("FT")){
+			if(ent.getString("message_type").equalsIgnoreCase("AT") || ent.getString("message_type").equalsIgnoreCase("AI") || ent.getString("message_type").equalsIgnoreCase("FI") || ent.getString("message_type").equalsIgnoreCase("FT") || ent.getString("message_type").equalsIgnoreCase("FW")){
 				// 알림톡
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setMsg_table(msg_table);

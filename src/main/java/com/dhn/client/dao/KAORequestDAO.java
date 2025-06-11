@@ -13,8 +13,6 @@ public interface KAORequestDAO {
 
     public void updateKAOGroupNo(SQLParameter param) throws Exception;
 
-    public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception;
-
     public void updateKAOSendComplete(SQLParameter param) throws Exception;
 
     public void updateKAOSendInit(SQLParameter param) throws Exception;
@@ -31,8 +29,6 @@ public interface KAORequestDAO {
 
     public void updateFTGroupNo(SQLParameter param) throws Exception;
 
-    public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception;
-
     public int selectFtImageCount(SQLParameter param) throws Exception;
 
     public List<ImageBean> selectFtImage(SQLParameter param) throws Exception;
@@ -40,4 +36,6 @@ public interface KAORequestDAO {
     public void updateFTImageUrl(SQLParameter param) throws Exception;
 
     public void updateFTImageFail(SQLParameter param) throws Exception;
+
+    List<KAORequestBean> selectKAOSendData(SQLParameter param) throws Exception;
 }

@@ -52,43 +52,6 @@
         </choose>
     </update>
 
-    <select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType= "com.dhn.client.bean.RequestBean">
-        <choose>
-            <when test="database == 'oracle'">
-                SELECT
-                    MSG_ID AS msgid,
-                    'PH' AS messagetype,
-                    MSG AS msg,
-                    MSG AS msgsms,
-                    PHN AS phn,
-                    P_INVOICE as pinvoice,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    SMS_KIND AS smskind,
-                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    '00000000000000' AS reservedt
-                from ${msg_table}
-                where SEND_GROUP = #{group_no}
-            </when>
-            <when test="database == 'mysql'">
-                SELECT
-                    MSG_ID AS msgid,
-                    'PH' AS messagetype,
-                    MSG AS msg,
-                    MSG AS msgsms,
-                    PHN AS phn,
-                    P_INVOICE as pinvoice,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    SMS_KIND AS smskind,
-                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
-                    '00000000000000' AS reservedt
-                from ${msg_table}
-                where SEND_GROUP = #{group_no}
-            </when>
-        </choose>
-    </select>
-
     <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
         <choose>
             <when test="database == 'oracle'">
@@ -289,43 +252,6 @@
         </choose>
     </update>
 
-    <select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType= "com.dhn.client.bean.RequestBean">
-        <choose>
-            <when test="database == 'oracle'">
-                SELECT
-                    MSG_ID AS msgid,
-                    'PH' AS messagetype,
-                    MSG AS msg,
-                    MSG AS msgsms,
-                    PHN AS phn,
-                    P_INVOICE as pinvoice,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    'L' AS smskind,
-                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    '00000000000000' AS reservedt
-                from ${msg_table}
-                where SEND_GROUP = #{group_no}
-            </when>
-            <when test="database == 'mysql'">
-                SELECT
-                    MSG_ID AS msgid,
-                    'PH' AS messagetype,
-                    MSG AS msg,
-                    MSG AS msgsms,
-                    PHN AS phn,
-                    P_INVOICE as pinvoice,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    'L' AS smskind,
-                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
-                    '00000000000000' AS reservedt
-                from ${msg_table}
-                where SEND_GROUP = #{group_no}
-            </when>
-        </choose>
-    </select>
-
     <select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         <choose>
             <when test="database == 'oracle'">
@@ -379,45 +305,6 @@
             </when>
         </choose>
     </update>
-
-    <select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType= "com.dhn.client.bean.RequestBean">
-        <choose>
-            <when test="database == 'oracle'">
-                SELECT
-                    MSG_ID AS msgid,
-                    'PH' AS messagetype,
-                    MSG AS msg,
-                    MSG AS msgsms,
-                    PHN AS phn,
-                    P_INVOICE as pinvoice,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    'M' AS smskind,
-                    MMS_IMAGE_KEY AS mmsimageid,
-                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    '00000000000000' AS reservedt
-                from ${msg_table}
-                where SEND_GROUP = #{group_no}
-            </when>
-            <when test="database == 'mysql'">
-                SELECT
-                    MSG_ID AS msgid,
-                    'PH' AS messagetype,
-                    MSG AS msg,
-                    MSG AS msgsms,
-                    PHN AS phn,
-                    P_INVOICE as pinvoice,
-                    SMS_SENDER AS smssender,
-                    SMSLMS_TIT AS smslmstit,
-                    'M' AS smskind,
-                    MMS_IMAGE_KEY AS mmsimageid,
-                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
-                    '00000000000000' AS reservedt
-                from ${msg_table}
-                where SEND_GROUP = #{group_no}
-            </when>
-        </choose>
-    </select>
 
     <select id="req_mms_image_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         <choose>
@@ -540,5 +427,44 @@
             </when>
         </choose>
     </delete>
+
+    <select id="msg_send_data_list" parameterType = "com.dhn.client.bean.SQLParameter" resultType= "com.dhn.client.bean.RequestBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    'PH' AS messagetype,
+                    MSG AS msg,
+                    MSG AS msgsms,
+                    PHN AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND AS smskind,
+                    MMS_IMAGE_KEY AS mmsimageid,
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    '00000000000000' AS reservedt
+                from ${msg_table}
+                where SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    'PH' AS messagetype,
+                    MSG AS msg,
+                    MSG AS msgsms,
+                    PHN AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND AS smskind,
+                    MMS_IMAGE_KEY AS mmsimageid,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    '00000000000000' AS reservedt
+                from ${msg_table}
+                where SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </select>
 
 </mapper>

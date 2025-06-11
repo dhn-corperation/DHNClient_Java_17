@@ -29,11 +29,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
-        return kaoRequestDAO.selectKAORequests(param);
-    }
-
-    @Override
     public void updateKAOSendComplete(SQLParameter param) throws Exception {
         kaoRequestDAO.updateKAOSendComplete(param);
     }
@@ -74,11 +69,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception {
-        return kaoRequestDAO.selectFTRequests(param);
-    }
-
-    @Override
     public int selectFtImageCount(SQLParameter param) throws Exception {
         return kaoRequestDAO.selectFtImageCount(param);
     }
@@ -96,6 +86,11 @@ public class KAORequestServiceimpl implements KAORequestService{
     @Override
     public void updateFTImageFail(SQLParameter param) throws Exception {
         kaoRequestDAO.updateFTImageFail(param);
+    }
+
+    @Override
+    public List<KAORequestBean> selectKAOSendData(SQLParameter param) throws Exception {
+        return kaoRequestDAO.selectKAOSendData(param);
     }
 
 }

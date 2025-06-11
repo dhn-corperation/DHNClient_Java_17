@@ -29,11 +29,6 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     }
 
     @Override
-    public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception {
-        return msgRequestDAO.selectSMSRequests(param);
-    }
-
-    @Override
     public void updateSMSSendComplete(SQLParameter param) throws Exception {
         msgRequestDAO.updateSMSSendComplete(param);
     }
@@ -74,11 +69,6 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     }
 
     @Override
-    public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception {
-        return msgRequestDAO.selectLMSRequests(param);
-    }
-
-    @Override
     public int selectMMSReqeustCount(SQLParameter param) throws Exception {
         return msgRequestDAO.selectMMSReqeustCount(param);
     }
@@ -86,11 +76,6 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     @Override
     public void updateMMSGroupNo(SQLParameter param) throws Exception {
         msgRequestDAO.updateMMSGroupNo(param);
-    }
-
-    @Override
-    public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception {
-        return msgRequestDAO.selectMMSRequests(param);
     }
 
     @Override
@@ -111,5 +96,10 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     @Override
     public void updateMMSImageFail(SQLParameter param) throws Exception {
         msgRequestDAO.updateMMSImageFail(param);
+    }
+
+    @Override
+    public List<RequestBean> selectMSGSendData(SQLParameter param) throws Exception {
+        return msgRequestDAO.selectMSGSendData(param);
     }
 }

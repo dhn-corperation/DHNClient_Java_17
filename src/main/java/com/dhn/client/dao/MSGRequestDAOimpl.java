@@ -29,11 +29,6 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
-    public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception {
-        return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.req_sms_select",param);
-    }
-
-    @Override
     public void updateSMSSendComplete(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_sent_complete",param);
     }
@@ -77,11 +72,6 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
-    public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception {
-        return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.req_lms_select",param);
-    }
-
-    @Override
     public int selectMMSReqeustCount(SQLParameter param) throws Exception {
         return sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_mms_count",param);
     }
@@ -89,11 +79,6 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     @Override
     public void updateMMSGroupNo(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_mms_group_update",param);
-    }
-
-    @Override
-    public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception {
-        return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.req_mms_select",param);
     }
 
     @Override
@@ -116,5 +101,10 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_update",param);
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_log_Insert", param);
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_delete", param);
+    }
+
+    @Override
+    public List<RequestBean> selectMSGSendData(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.msg_send_data_list", param);
     }
 }

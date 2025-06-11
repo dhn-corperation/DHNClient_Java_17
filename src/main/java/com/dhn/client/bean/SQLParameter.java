@@ -36,5 +36,6 @@ public class SQLParameter {
 	private String img_err_msg;
 	private String time;
 	private String log_back;
+	private String userid;
 
 }

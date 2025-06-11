@@ -4,19 +4,25 @@ import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.MSGRequestService;
+import com.dhn.client.service.MSGService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -43,13 +49,19 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String preGroupNo = "";
 	private String log_table;
 
-	private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
 	@Autowired
 	private MSGRequestService msgRequestService;
 	
 	@Autowired
 	private ApplicationContext appContext;
+
+	@Autowired
+	private MSGService msgService;
+
+	@Autowired
+	private WebClient webClient;
 
 	@Autowired
 	private ScheduledAnnotationBeanPostProcessor posts;
@@ -60,6 +72,8 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_use(appContext.getEnvironment().getProperty("dhnclient.msg_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
+		param.setUserid(appContext.getEnvironment().getProperty("dhnclient.userid"));
+		param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
 		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		param.setMsg_type("PH");
 		param.setSms_kind("M");
@@ -100,7 +114,16 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							param.setGroup_no(group_no);
 							msgRequestService.updateMMSGroupNo(param);
 
-							executorService.submit(() -> APIProcess(group_no));
+							SQLParameter sendParam = new SQLParameter();
+							sendParam.setGroup_no(group_no);
+							sendParam.setMsg_table(param.getMsg_table());
+							sendParam.setDatabase(param.getDatabase());
+							sendParam.setSequence(param.getSequence());
+							sendParam.setMsg_type(param.getMsg_type());
+							sendParam.setSms_kind(param.getSms_kind());
+							sendParam.setUserid(param.getUserid());
+
+							executorService.submit(() -> msgService.MSGSendApiProcess(sendParam));
 
 						}
 					}catch (Exception e){
@@ -129,65 +152,73 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 					for (ImageBean mmsImageBean : imgList) {
 						param.setMsgid(mmsImageBean.getMsgid());
 
-						// 헤더 설정
-						HttpHeaders headers = new HttpHeaders();
-						headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-						headers.set("userid", userid);
-
-						// MultiValueMap을 사용해 파일 데이터 전송 준비
-						MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-						body.add("userid", userid);
-
-						if (mmsImageBean.getFile1() != null && mmsImageBean.getFile1().length() > 0) {
-							File file = new File(basepath + mmsImageBean.getFile1());
-							body.add("image1", new org.springframework.core.io.FileSystemResource(file));
-						}
-						if (mmsImageBean.getFile2() != null && mmsImageBean.getFile2().length() > 0) {
-							File file = new File(basepath + mmsImageBean.getFile2());
-							body.add("image2", new org.springframework.core.io.FileSystemResource(file));
-						}
-						if (mmsImageBean.getFile3() != null && mmsImageBean.getFile3().length() > 0) {
-							File file = new File(basepath + mmsImageBean.getFile3());
-							body.add("image3", new org.springframework.core.io.FileSystemResource(file));
-						}
-
-						// HttpEntity 생성
-						HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-						RestTemplate restTemplate = new RestTemplate();
-
 						LocalDate now = LocalDate.now();
 						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 						String currentMonth = now.format(formatter);
 
+						MultipartBodyBuilder builder = new MultipartBodyBuilder();
+						builder.part("userid",userid);
+
+						if (mmsImageBean.getFile1() != null && !mmsImageBean.getFile1().isEmpty()) {
+							builder.part("image1", new FileSystemResource(basepath + mmsImageBean.getFile1()));
+						}
+						if (mmsImageBean.getFile2() != null && !mmsImageBean.getFile2().isEmpty()) {
+							builder.part("image2", new FileSystemResource(basepath + mmsImageBean.getFile2()));
+						}
+						if (mmsImageBean.getFile3() != null && !mmsImageBean.getFile3().isEmpty()) {
+							builder.part("image3", new FileSystemResource(basepath + mmsImageBean.getFile3()));
+						}
+
 						try{
-							ResponseEntity<String> response = restTemplate.exchange(dhnServer + "mms/image", HttpMethod.POST, requestEntity, String.class);
-
-							if (response.getStatusCode() == HttpStatus.OK) {
-								String responseBody = response.getBody();
-								ObjectMapper mapper = new ObjectMapper();
-								Map<String, String> res = mapper.readValue(responseBody, Map.class);
-
-								log.info("MMS Image Key : " + res.toString());
-
-								if (res.get("image_group") != null && res.get("image_group").length() > 0) {
-									param.setMms_key(res.get("image_group"));
-									msgRequestService.updateMMSImageGroup(param);
-								} else {
-									log.info("MMS 이미지 등록 실패 : " + res.toString());
-									param.setLog_table(log_table + "_" + currentMonth);
-									param.setMsg_image_code("9999");
-									msgRequestService.updateMMSImageFail(param);
-								}
-							} else {
-								log.info("MMS 이미지 등록 실패 : " + response.getBody());
-								param.setLog_table(log_table + "_" + currentMonth);
-								param.setMsg_image_code(String.valueOf(response.getStatusCodeValue()));
-								msgRequestService.updateMMSImageFail(param);
-							}
+							webClient.post()
+									.uri("mms/image")
+									.header("userid", userid)
+									.contentType(MediaType.MULTIPART_FORM_DATA)
+									.body(BodyInserters.fromMultipartData(builder.build()))
+									.retrieve()
+									.bodyToMono(new ParameterizedTypeReference<Map<String, String>>() {})
+									.doOnNext(res -> {
+										try{
+											log.info("MMS Image Key : {}", res);
+											if (res.get("image_group") != null && !res.get("image_group").isEmpty()) {
+												param.setMms_key(res.get("image_group"));
+												msgRequestService.updateMMSImageGroup(param);
+											} else {
+												log.info("MMS 이미지 등록 실패 : {}", res);
+												if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+													param.setLog_table(log_table + "_" + currentMonth);
+												}else{
+													param.setLog_table(log_table);
+												}
+												param.setMsg_image_code("9999");
+												msgRequestService.updateMMSImageFail(param);
+											}
+										}catch (Exception e){
+											log.error("MMS 이미지 처리 중 오류 발생 : {}", e.toString());
+										}
+									})
+									.doOnError(e -> {
+										try{
+											log.error("MMS Image Key 등록 요청 오류 : {}", e.toString());
+											if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+												param.setLog_table(log_table + "_" + currentMonth);
+											}else{
+												param.setLog_table(log_table);
+											}
+											param.setMsg_image_code("9999");
+											msgRequestService.updateMMSImageFail(param);
+										}catch (Exception ex){
+											log.error("MMS 이미지 등록 요청 실패 중 오류 발생 : {}", e.toString());
+										}
+									})
+									.block(); // 반드시 동기 처리 필요 시 block()
 						}catch (Exception e){
-							log.error("MMS Image Key 등록 오류 : ", e.getMessage());
-							param.setLog_table(log_table + "_" + currentMonth);
+							log.error("WebClient 처리 오류", e);
+							if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+								param.setLog_table(log_table + "_" + currentMonth);
+							}else{
+								param.setLog_table(log_table);
+							}
 							param.setMsg_image_code("9999");
 							msgRequestService.updateMMSImageFail(param);
 						}
@@ -200,52 +231,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			}
 		}
 		isProcMms = false;
-	}
-
-	private void APIProcess(String group_no) {
-		try{
-			SQLParameter sendParam = new SQLParameter();
-			sendParam.setGroup_no(group_no);
-			sendParam.setMsg_table(param.getMsg_table());
-			sendParam.setDatabase(param.getDatabase());
-			sendParam.setSequence(param.getSequence());
-			sendParam.setMsg_type(param.getMsg_type());
-			sendParam.setSms_kind(param.getSms_kind());
-
-			List<RequestBean> _list = msgRequestService.selectMMSRequests(sendParam);
-
-			StringWriter sw = new StringWriter();
-			ObjectMapper om = new ObjectMapper();
-			om.writeValue(sw, _list);
-
-//						log.info(sw.toString());
-
-			HttpHeaders header = new HttpHeaders();
-
-			header.setContentType(MediaType.APPLICATION_JSON);
-			header.set("userid", userid);
-
-			RestTemplate rt = new RestTemplate();
-			HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-			try {
-				ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-				Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-				if(response.getStatusCode() ==  HttpStatus.OK)
-				{
-					msgRequestService.updateSMSSendComplete(sendParam);
-					log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-				} else {
-					log.info("({}) MMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-					msgRequestService.updateSMSSendInit(sendParam);
-				}
-			}catch (Exception e) {
-				log.error("MMS 메세지 전송 오류 : " + e.toString());
-				msgRequestService.updateSMSSendInit(sendParam);
-			}
-		}catch (Exception e){
-			log.error("MMS 메세지 전송 오류 : " + e.toString());
-		}
 	}
 
 }

@@ -13,8 +13,6 @@ public interface MSGRequestDAO {
 
     public void updateSMSGroupNo(SQLParameter param) throws Exception;
 
-    public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception;
-
     public void updateSMSSendComplete(SQLParameter param) throws Exception;
 
     public void updateSMSSendInit(SQLParameter param) throws Exception;
@@ -31,13 +29,9 @@ public interface MSGRequestDAO {
 
     public void updateLMSGroupNo(SQLParameter param) throws Exception;
 
-    public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception;
-
     public int selectMMSReqeustCount(SQLParameter param) throws Exception;
 
     public void updateMMSGroupNo(SQLParameter param) throws Exception;
-
-    public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception;
 
     public int selectMMSImageCount(SQLParameter param) throws Exception;
 
@@ -46,4 +40,6 @@ public interface MSGRequestDAO {
     public void updateMMSImageGroup(SQLParameter param) throws Exception;
 
     public void updateMMSImageFail(SQLParameter param) throws Exception;
+
+    public List<RequestBean> selectMSGSendData(SQLParameter param) throws Exception;
 }
